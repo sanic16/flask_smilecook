@@ -1,7 +1,8 @@
-from flask import request
+from flask import request, url_for
 from flask_restful import Resource
 from http import HTTPStatus
-from utils.common import hash_password
+from utils.common import hash_password, generate_confirmation_token, verify_token
+from utils.email import send_email
 from models.user import User
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
@@ -26,6 +27,14 @@ class UserListResource(Resource):
         user.password = password
         user.save()
 
+        token = generate_confirmation_token(user.email, salt='activate')
+        subject = 'Please confirm your registration'
+        link = url_for('useractivateresource', token=token, _external=True)
+        body = f'Your confirmation link is: {link}'
+        recipient = user.email
+
+        send_email(subject=subject, body=body, recipient=recipient)        
+
         data = {
             'id': user.id,
             'username': user.username,
@@ -33,6 +42,31 @@ class UserListResource(Resource):
         }
 
         return data, HTTPStatus.CREATED
+    
+class UserActivateResource(Resource):
+    def get(self, token):
+        email = verify_token(token, salt='activate')
+        print(email[0])
+        print(type(email[0]))
+        if email is False:
+            return {'message': 'Invalid token'}, HTTPStatus.BAD_REQUEST
+        
+        user = User.get_by_email(email=email[0])
+
+        if not user:
+            return {
+                'message': 'User not found'
+            }, HTTPStatus.NOT_FOUND
+        
+        if user.is_active is True:
+            return {'message': 'The user account is already activated'}, HTTPStatus.BAD_REQUEST
+        
+        user.is_active = True
+
+        user.save()
+
+        return {}, HTTPStatus.NO_CONTENT
+            
 
 class UserResource(Resource):
     @jwt_required(optional=True)

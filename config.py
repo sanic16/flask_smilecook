@@ -11,7 +11,6 @@ db = {
     'database': os.getenv('DB_NAME')
 }
 
-print(db)
 
 class Config:
     DEBUG=True
@@ -23,3 +22,10 @@ class Config:
 
     JWT_ACCESS_TOKEN_EXPIRES=60*60*24*1
 
+    # Flask-Mail Configuration
+    MAIL_SERVER='smtp.sendgrid.net'
+    MAIL_PORT=587
+    MAIL_USE_TLS=True
+    MAIL_USERNAME='apikey'
+    MAIL_PASSWORD=os.environ.get('SENDGRID_API_KEY')
+    MAIL_DEFAULT_SENDER=os.environ.get('MAIL_DEFAULT_SENDER')
