@@ -44,19 +44,30 @@ class RecipeResource(Resource):
         return recipe.data(), HTTPStatus.OK 
         
     
-#     def put(self, recipe_id):
-#         data = request.get_json()
-#         recipe = next((recipe for recipe in recipe_list if recipe.id == recipe_id), None)
+    @jwt_required(optional=False)
+    def put(self, recipe_id):
+        json_data = request.get_json()
 
-#         if recipe is None:
-#             return {'message': 'recipe not found'}, HTTPStatus.NOT_FOUND
+        recipe = Recipe.get_by_id(recipe_id=recipe_id)
+
+        if recipe is None:
+            return {'message': 'Recipe not found'}, HTTPStatus.NOT_FOUND
         
-#         recipe.name = data['name']
-#         recipe.description = data['description']
-#         recipe.num_of_servings = data['num_of_servings']
-#         recipe.cook_time = data['cook_time']
-#         recipe.directions = data['directions']
-#         return recipe.data, HTTPStatus.OK
+        current_user = get_jwt_identity()
+
+        if current_user != recipe.user_id:
+            return {'message': 'Access is not allowed'}, HTTPStatus.FORBIDDEN
+        
+        recipe.name = json_data.get('name')
+        recipe.description = json_data.get('description')
+        recipe.num_of_servings = json_data.get('num_of_servings')
+        recipe.cook_time = json_data.get('cook_time')
+        recipe.directions = json_data.get('directions')
+
+        recipe.save()
+
+        return recipe.data(), HTTPStatus.OK
+    
 
 #     def delete(self, recipe_id):
 #         recipe = next((recipe for recipe in recipe_list if recipe.id == recipe_id), None)
