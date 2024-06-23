@@ -2,7 +2,7 @@ from http import HTTPStatus
 from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, get_jwt
-from utils import check_password
+from utils.common import check_password
 from models.user import User
 from models.token import TokenBlocklist
 from datetime import datetime, timezone
