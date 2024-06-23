@@ -36,6 +36,7 @@ class RevokeResource(Resource):
     @jwt_required()
     def post(self):
         jti = get_jwt()['jti']
+        type = get_jwt()['type']
         now = datetime.now(timezone.utc)
-        TokenBlocklist(jti=jti, created_at=now).add()
+        TokenBlocklist(jti=jti, created_at=now, type=type).add()
         return {'message': 'Successfully logged out'}, HTTPStatus.OK     
