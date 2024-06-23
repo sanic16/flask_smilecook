@@ -69,16 +69,21 @@ class RecipeResource(Resource):
         return recipe.data(), HTTPStatus.OK
     
 
-#     def delete(self, recipe_id):
-#         recipe = next((recipe for recipe in recipe_list if recipe.id == recipe_id), None)
+    @jwt_required(optional=False)
+    def delete(self, recipe_id):
+        recipe = Recipe.get_by_id(recipe_id=recipe_id)
 
-#         if recipe is None:
-#             return {'message': 'recipe not found'}, HTTPStatus.NOT_FOUND
+        if recipe is None:
+            return {'message': 'Recipe not found'}, HTTPStatus.NOT_FOUND
+        
+        current_user = get_jwt_identity()
 
-#         recipe_list.remove(recipe)
+        if current_user != recipe.user_id:
+            return {'message': 'Access is not allowed'}, HTTPStatus.FORBIDDEN
+        
+        recipe.delete()
 
-#         return {}, HTTPStatus.NO_CONTENT
-
+        return {}, HTTPStatus.NO_CONTENT 
 
 # class RecipePublishResource(Resource):
 #     def put(self, recipe_id):
