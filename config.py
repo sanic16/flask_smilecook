@@ -22,3 +22,4 @@ class Config:
     JWT_ERROR_MESSAGE_KEY='message'
 
     JWT_ACCESS_TOKEN_EXPIRES=60*60*24*1
+
